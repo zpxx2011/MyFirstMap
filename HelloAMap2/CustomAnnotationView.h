@@ -6,7 +6,8 @@
 //  Copyright © 2015年 Devin. All rights reserved.
 //
 
-#import <MAMapKit/MAMapKit.h>
+#import <AMapNaviKit/AMapNaviKit.h>
+//#import <MAMapKit/MAMapKit.h>
 @class CustomCalloutView;
 
 

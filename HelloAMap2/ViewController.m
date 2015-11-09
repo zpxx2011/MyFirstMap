@@ -7,17 +7,20 @@
 //
 
 #import "ViewController.h"
-#import <MAMapKit/MAMapKit.h>
+//#import <MAMapKit/MAMapKit.h>
+#import <AMapNaviKit/AMapNaviKit.h>
 #import <AMapSearchKit/AMapSearchKit.h>
 #import "CustomAnnotationView.h"
 #import "CustomCalloutView.h"
+#import <AVFoundation/AVFoundation.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 
 #define APIKey @"018051a0557dfee8326cfcc199cd9c28"
 
 
 
-@interface ViewController ()<MAMapViewDelegate, AMapSearchDelegate, UITableViewDataSource, UITableViewDelegate, UIGestureRecognizerDelegate>
+@interface ViewController ()<MAMapViewDelegate, AMapSearchDelegate, UITableViewDataSource, UITableViewDelegate, UIGestureRecognizerDelegate, AMapNaviManagerDelegate, AMapNaviViewControllerDelegate>
 
 @property (nonatomic, strong) MAMapView *mapView; // 地图属性
 // 创建一个按钮随时可以定位用户位置
@@ -46,9 +49,11 @@
 @property (nonatomic, strong) NSArray *pathPloylines;
 
 // 声明一个导航管理对象
-//@property (nonatomic, strong) AMapNaviManager *naviManager;
+@property (nonatomic, strong) AMapNaviManager *naviManager;
 // 声明一个导航视图控制对象
-//@property (nonatomic, strong) AMapNaviViewController *naviViewController;
+@property (nonatomic, strong) AMapNaviViewController *naviViewController;
+
+
 
 @end
 
@@ -75,10 +80,9 @@
     [self initTableView];
     
     // 导航管理的初始化
-//    [self initNaviManager];
+    [self initNaviManager];
     
-    // 导航视图控制器的初始化
-//    [self initNaviViewController];
+   
     
     
     // Do any additional setup after loading the view, typically from a nib.
@@ -193,25 +197,25 @@
     [self.view addSubview:_tableView];
 }
 
-//// 初始化导航管理对象
-//- (void)initNaviManager{
-//    
-//    if (_naviManager == nil) {
-//        
-//        _naviManager = [[AMapNaviManager alloc] init];
-//        _naviManager.delegate = self;
-//    }
-//}
-//
-//// 初始化导航视图控制器
-//- (void)initNaviViewController{
-//    
-//    if (_naviViewController == nil) {
-//        
-//        _naviViewController = [[AMapNaviViewController alloc] initWithMapView:self.mapView delegate:self];
-//    }
-//}
+// 初始化导航管理对象
+- (void)initNaviManager{
+    
+    [AMapNaviServices sharedServices].apiKey = APIKey;
+    if (_naviManager == nil) {
+        
+        _naviManager = [[AMapNaviManager alloc] init];
+        _naviManager.delegate = self;
+    }
+}
 
+// 初始化导航视图控制器
+- (void)initNaviViewController{
+    
+    if (_naviViewController == nil) {
+        
+        _naviViewController = [[AMapNaviViewController alloc] initWithMapView:self.mapView delegate:self];
+    }
+}
 
 
 
@@ -319,18 +323,22 @@
     [self pathAction];
 }
 
-//// 开启导航
-//- (void)naviAction{
-//    
-//    AMapNaviPoint *startPoint = [AMapNaviPoint locationWithLatitude:_currentLocation.coordinate.latitude longitude:_currentLocation.coordinate.longitude];
-//    AMapNaviPoint *endPoint = [AMapNaviPoint locationWithLatitude:_destinationPoint.coordinate.latitude longitude:_destinationPoint.coordinate.longitude];
-//    
-//    NSArray *startPoints = @[startPoint];
-//    NSArray *endPoints = @[endPoint];
-//    
-//    // 步行路径规划
-//    [_naviManager calculateWalkRouteWithStartPoints:startPoints endPoints:endPoints];
-//}
+// 开启导航
+- (void)naviAction{
+    
+    // 导航视图控制器的初始化
+    [self initNaviViewController];
+    
+
+    AMapNaviPoint *startPoint = [AMapNaviPoint locationWithLatitude:_currentLocation.coordinate.latitude longitude:_currentLocation.coordinate.longitude];
+    AMapNaviPoint *endPoint = [AMapNaviPoint locationWithLatitude:_destinationPoint.coordinate.latitude longitude:_destinationPoint.coordinate.longitude];
+    
+    NSArray *startPoints = @[startPoint];
+    NSArray *endPoints = @[endPoint];
+    
+    // 步行路径规划
+    [_naviManager calculateWalkRouteWithStartPoints:startPoints endPoints:endPoints];
+}
 
 
 
@@ -620,20 +628,34 @@
 
 
 #pragma mark --- navigation delegate
-//// 路径规划成功的回调函数
-//- (void)naviManagerOnCalculateRouteSuccess:(AMapNaviManager *)naviManager{
-//    
-//    // 导航视图展示
-//    [_naviManager presentNaviViewController:_naviViewController animated:YES];
-//}
-//
-//// 导航视图被展示出来的回调函数
-//- (void)naviManager:(AMapNaviManager *)naviManager didPresentNaviViewController:(UIViewController *)naviViewController{
-//    
-//    [super navigationController];
-//    
-//    [_naviManager startGPSNavi];
-//}
+// 路径规划成功的回调函数
+- (void)naviManagerOnCalculateRouteSuccess:(AMapNaviManager *)naviManager{
+    
+    // 导航视图展示
+    [_naviManager presentNaviViewController:_naviViewController animated:YES];
+    
+}
+
+// 导航视图被展示出来的回调函数
+- (void)naviManager:(AMapNaviManager *)naviManager didPresentNaviViewController:(UIViewController *)naviViewController{
+    
+    [_naviManager setAllowsBackgroundLocationUpdates:YES];
+    [_naviManager startGPSNavi];
+}
+
+// 导航界面关闭按钮
+- (void)naviViewControllerCloseButtonClicked:(AMapNaviViewController *)naviViewController{
+    
+    
+    [self.naviManager stopNavi];
+    [self.naviManager dismissNaviViewControllerAnimated:YES];
+    
+    [self viewDidLoad];
+}
+
+
+
+
 
 
 @end
