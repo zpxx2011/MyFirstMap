@@ -10,4 +10,12 @@
 
 @interface CustomCalloutView : UIView
 
+// 气泡上的控件属性
+@property (nonatomic, strong) UIImage *image;
+@property (nonatomic, strong) NSString *title;
+@property (nonatomic, strong) NSString *subTitle;
+
+@property (nonatomic, strong) UIButton *GoButton;
+
+
 @end

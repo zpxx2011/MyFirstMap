@@ -7,7 +7,13 @@
 //
 
 #import <MAMapKit/MAMapKit.h>
+@class CustomCalloutView;
+
 
 @interface CustomAnnotationView : MAAnnotationView
+
+// 气泡视图
+@property (nonatomic, strong) CustomCalloutView *calloutView;
+
 
 @end
